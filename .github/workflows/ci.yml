@@ -140,20 +140,13 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     
-    - name: Create GitHub Release Assets
+    - name: Create and Upload GitHub Release Assets
       run: |
         npm pack
         mv contentmark-cli-*.tgz contentmark-cli.tgz
-    
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
+        gh release upload ${{ github.event.release.tag_name }} contentmark-cli.tgz --clobber
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./contentmark-cli.tgz
-        asset_name: contentmark-cli.tgz
-        asset_content_type: application/gzip
 
   security:
     runs-on: ubuntu-latest
