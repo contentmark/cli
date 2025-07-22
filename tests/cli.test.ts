@@ -1,11 +1,13 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { resolve } from 'path';
 import { createTempFile, TEST_MANIFESTS } from './setup';
 
 const execAsync = promisify(exec);
 
 describe('CLI Integration Tests', () => {
   const CLI_PATH = './dist/cli.js';
+  const ABSOLUTE_CLI_PATH = resolve(process.cwd(), CLI_PATH);
 
   beforeAll(async () => {
     await execAsync('npm run build');
@@ -104,7 +106,7 @@ describe('CLI Integration Tests', () => {
       await execAsync(`mkdir -p ${tempDir}`);
       
       try {
-        const { stdout } = await execAsync(`cd ${tempDir} && node /home/ubuntu/cli/${CLI_PATH} init`);
+        const { stdout } = await execAsync(`cd ${tempDir} && node ${ABSOLUTE_CLI_PATH} init`);
         expect(stdout).toContain('✅ ContentMark has been initialized in your project');
         
         const { stdout: lsOutput } = await execAsync(`ls ${tempDir}/.well-known/`);
