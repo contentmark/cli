@@ -30,7 +30,7 @@ export class YamlFormatter extends OutputFormatter {
       manifestUrl: result.manifestUrl,
       errors: result.errors
     }));
-    
+
     return yaml.dump({
       results: formatted,
       summary: {

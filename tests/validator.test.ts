@@ -22,7 +22,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(manifest));
-      
+
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
       expect(result.manifest).toEqual(manifest);
@@ -30,9 +30,9 @@ describe('ContentMarkValidator', () => {
 
     it('should reject invalid JSON', async () => {
       const invalidJson = '{ invalid json }';
-      
+
       const result = await validator.validate(invalidJson);
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.some(error => error.includes('Invalid JSON'))).toBe(true);
     });
@@ -44,7 +44,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(incomplete));
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.some(error => error.includes('siteName'))).toBe(true);
       expect(result.errors.some(error => error.includes('defaultUsagePolicy'))).toBe(true);
@@ -65,7 +65,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(manifest));
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.some(error => error.includes('canSummarize must be a boolean'))).toBe(true);
       expect(result.errors.some(error => error.includes('mustAttribute'))).toBe(true);
@@ -85,7 +85,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(manifest));
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.some(error => error.includes('semantic versioning'))).toBe(true);
     });
@@ -107,7 +107,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(manifest));
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.some(error => error.includes('valid absolute URL'))).toBe(true);
     });
@@ -129,7 +129,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(manifest));
-      
+
       expect(result.valid).toBe(true); // Structure is valid
       expect(result.warnings.some(warning => warning.includes('Conflicting settings'))).toBe(true);
     });
@@ -148,7 +148,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(basicManifest));
-      
+
       expect(result.valid).toBe(true);
       expect(result.suggestions.some(suggestion => suggestion.includes('monetization'))).toBe(true);
       expect(result.suggestions.some(suggestion => suggestion.includes('visibility'))).toBe(true);
@@ -172,7 +172,7 @@ describe('ContentMarkValidator', () => {
       };
 
       const result = await validator.validate(JSON.stringify(manifest));
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.some(error => error.includes('loginUrl is required'))).toBe(true);
     });
@@ -181,7 +181,7 @@ describe('ContentMarkValidator', () => {
   describe('validateURL', () => {
     it('should handle network errors gracefully', async () => {
       const result = await validator.validateURL('https://nonexistent-domain-12345.com');
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.some(error => error.includes('Network error'))).toBe(true);
     });
@@ -190,7 +190,7 @@ describe('ContentMarkValidator', () => {
       // This test would need a mock server or real test endpoint
       // For now, testing the error handling structure
       const result = await validator.validateURL('https://httpstat.us/404');
-      
+
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
     });

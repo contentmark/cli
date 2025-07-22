@@ -63,27 +63,27 @@ export interface ContentMarkManifest {
 }
 
 export class ContentMarkGenerator {
-  
+
   generateTemplate(type: 'blog' | 'business' | 'premium' | 'ecommerce' | 'news' | 'education' | 'api'): ContentMarkManifest {
     const now = new Date().toISOString();
-    
+
     switch (type.toLowerCase()) {
-      case 'blog':
-        return this.generateBlogTemplate(now);
-      case 'business':
-        return this.generateBusinessTemplate(now);
-      case 'premium':
-        return this.generatePremiumTemplate(now);
-      case 'ecommerce':
-        return this.generateEcommerceTemplate(now);
-      case 'news':
-        return this.generateNewsTemplate(now);
-      case 'education':
-        return this.generateEducationTemplate(now);
-      case 'api':
-        return this.generateApiTemplate(now);
-      default:
-        throw new Error(`Unknown template type: ${type}. Available types: blog, business, premium, ecommerce, news, education, api`);
+    case 'blog':
+      return this.generateBlogTemplate(now);
+    case 'business':
+      return this.generateBusinessTemplate(now);
+    case 'premium':
+      return this.generatePremiumTemplate(now);
+    case 'ecommerce':
+      return this.generateEcommerceTemplate(now);
+    case 'news':
+      return this.generateNewsTemplate(now);
+    case 'education':
+      return this.generateEducationTemplate(now);
+    case 'api':
+      return this.generateApiTemplate(now);
+    default:
+      throw new Error(`Unknown template type: ${type}. Available types: blog, business, premium, ecommerce, news, education, api`);
     }
   }
 
@@ -283,112 +283,112 @@ export class ContentMarkGenerator {
 
   private async promptMonetization(type: string) {
     switch (type) {
-      case 'tips':
-        const tipInfo = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'tipJar',
-            message: 'Tip jar URL (Buy Me a Coffee, Ko-fi, etc.):',
-            validate: (input) => {
-              try {
-                new URL(input);
-                return true;
-              } catch {
-                return 'Please enter a valid URL';
-              }
+    case 'tips':
+      const tipInfo = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'tipJar',
+          message: 'Tip jar URL (Buy Me a Coffee, Ko-fi, etc.):',
+          validate: (input) => {
+            try {
+              new URL(input);
+              return true;
+            } catch {
+              return 'Please enter a valid URL';
             }
           }
-        ]);
-        return { tipJar: tipInfo.tipJar };
-
-      case 'services':
-        const serviceInfo = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'consultation',
-            message: 'Do you offer consultation services?',
-            default: true
-          },
-          {
-            type: 'input',
-            name: 'bookingUrl',
-            message: 'Booking URL (Calendly, etc.):',
-            when: (answers) => answers.consultation,
-            validate: (input) => {
-              try {
-                new URL(input);
-                return true;
-              } catch {
-                return 'Please enter a valid URL';
-              }
-            }
-          },
-          {
-            type: 'input',
-            name: 'hourlyRate',
-            message: 'Hourly rate (e.g., $150/hour):',
-            when: (answers) => answers.consultation
-          }
-        ]);
-
-        const monetization: any = {};
-        
-        if (serviceInfo.consultation) {
-          monetization.consultation = {
-            available: true,
-            bookingUrl: serviceInfo.bookingUrl,
-            hourlyRate: serviceInfo.hourlyRate || undefined
-          };
         }
+      ]);
+      return { tipJar: tipInfo.tipJar };
 
-        // Ask about additional services
-        const additionalServices = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'hasServices',
-            message: 'Do you want to list specific services/products?',
-            default: false
-          }
-        ]);
-
-        if (additionalServices.hasServices) {
-          monetization.services = await this.promptServices();
-        }
-
-        return monetization;
-
-      case 'premium':
-        const premiumInfo = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'subscriptionUrl',
-            message: 'Subscription URL:',
-            validate: (input) => {
-              try {
-                new URL(input);
-                return true;
-              } catch {
-                return 'Please enter a valid URL';
-              }
+    case 'services':
+      const serviceInfo = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'consultation',
+          message: 'Do you offer consultation services?',
+          default: true
+        },
+        {
+          type: 'input',
+          name: 'bookingUrl',
+          message: 'Booking URL (Calendly, etc.):',
+          when: (answers) => answers.consultation,
+          validate: (input) => {
+            try {
+              new URL(input);
+              return true;
+            } catch {
+              return 'Please enter a valid URL';
             }
-          },
-          {
-            type: 'input',
-            name: 'price',
-            message: 'Subscription price (e.g., $9.99/month):',
           }
-        ]);
+        },
+        {
+          type: 'input',
+          name: 'hourlyRate',
+          message: 'Hourly rate (e.g., $150/hour):',
+          when: (answers) => answers.consultation
+        }
+      ]);
 
-        return {
-          subscription: {
-            platform: 'Premium Content',
-            url: premiumInfo.subscriptionUrl,
-            price: premiumInfo.price
-          }
+      const monetization: any = {};
+
+      if (serviceInfo.consultation) {
+        monetization.consultation = {
+          available: true,
+          bookingUrl: serviceInfo.bookingUrl,
+          hourlyRate: serviceInfo.hourlyRate || undefined
         };
+      }
 
-      default:
-        return undefined;
+      // Ask about additional services
+      const additionalServices = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'hasServices',
+          message: 'Do you want to list specific services/products?',
+          default: false
+        }
+      ]);
+
+      if (additionalServices.hasServices) {
+        monetization.services = await this.promptServices();
+      }
+
+      return monetization;
+
+    case 'premium':
+      const premiumInfo = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'subscriptionUrl',
+          message: 'Subscription URL:',
+          validate: (input) => {
+            try {
+              new URL(input);
+              return true;
+            } catch {
+              return 'Please enter a valid URL';
+            }
+          }
+        },
+        {
+          type: 'input',
+          name: 'price',
+          message: 'Subscription price (e.g., $9.99/month):'
+        }
+      ]);
+
+      return {
+        subscription: {
+          platform: 'Premium Content',
+          url: premiumInfo.subscriptionUrl,
+          price: premiumInfo.price
+        }
+      };
+
+    default:
+      return undefined;
     }
   }
 
@@ -420,7 +420,7 @@ export class ContentMarkGenerator {
         {
           type: 'input',
           name: 'pricing',
-          message: 'Pricing (e.g., from $500, $99/month):',
+          message: 'Pricing (e.g., from $500, $99/month):'
         }
       ]);
 

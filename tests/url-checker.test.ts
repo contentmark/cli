@@ -24,7 +24,7 @@ describe('URLChecker', () => {
       mockServer.setContentMarkResponse(TEST_MANIFESTS.VALID_BASIC);
 
       const result = await checker.checkWebsite('https://example.com');
-      
+
       expect(result.found).toBe(true);
       expect(result.method).toBe('well-known');
       expect(result.manifestUrl).toBe('https://example.com/.well-known/contentmark.json');
@@ -39,7 +39,7 @@ describe('URLChecker', () => {
       });
 
       const result = await checker.checkWebsite('https://example.com');
-      
+
       expect(result.found).toBe(true);
       expect(result.method).toBe('html-link');
       expect(result.manifestUrl).toBe('https://example.com/manifest.json');
@@ -53,7 +53,7 @@ describe('URLChecker', () => {
       mockServer.setResponse('/contentmark.json', 200, JSON.stringify(TEST_MANIFESTS.VALID_BASIC));
 
       const result = await checker.checkWebsite('https://example.com');
-      
+
       expect(result.found).toBe(true);
       expect(result.method).toBe('http-header');
     });
@@ -63,7 +63,7 @@ describe('URLChecker', () => {
       mockServer.setHTMLResponse(createHTMLWithoutContentMark());
 
       const result = await checker.checkWebsite('https://example.com');
-      
+
       expect(result.found).toBe(false);
       expect(result.method).toBeUndefined();
       expect(result.manifestUrl).toBeUndefined();
@@ -79,7 +79,7 @@ describe('URLChecker', () => {
 
     it('should handle invalid URLs', async () => {
       const errorChecker = new URLChecker(jest.fn(() => Promise.reject(new Error('Invalid URL format'))));
-      
+
       const result = await errorChecker.checkWebsite('https://example.com');
       expect(result.found).toBe(false);
       expect(result.errors).toEqual(expect.arrayContaining(['Invalid URL format']));
@@ -92,7 +92,7 @@ describe('URLChecker', () => {
       mockServer.setContentMarkResponse(TEST_MANIFESTS.VALID_BASIC);
 
       const results = await checker.checkMultipleWebsites(urls);
-      
+
       expect(results).toHaveLength(2);
       expect(results[0][0]).toBe('https://site1.com');
       expect(results[1][0]).toBe('https://site2.com');
@@ -102,7 +102,7 @@ describe('URLChecker', () => {
 
     it('should handle mixed success and failure results', async () => {
       const urls = ['https://working.com', 'https://broken.com'];
-      
+
       const mixedFetch = jest.fn((url: string) => {
         if (url.includes('working.com')) {
           return Promise.resolve({
@@ -116,10 +116,10 @@ describe('URLChecker', () => {
           return Promise.reject(new Error('Network error'));
         }
       });
-      
+
       const mixedChecker = new URLChecker(mixedFetch);
       const results = await mixedChecker.checkMultipleWebsites(urls);
-      
+
       expect(results).toHaveLength(2);
       expect(results[0][1].found).toBe(true);
       expect(results[1][1].found).toBe(false);

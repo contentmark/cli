@@ -22,7 +22,7 @@ export class ContentMarkValidator {
 
   private async loadSchema(schemaUrl?: string): Promise<any> {
     const url = schemaUrl || this.customSchemaUrl || ContentMarkValidator.DEFAULT_SCHEMA_URL;
-    
+
     if (ContentMarkValidator.schemaCache.has(url)) {
       return ContentMarkValidator.schemaCache.get(url);
     }
@@ -32,7 +32,7 @@ export class ContentMarkValidator {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const schema = await response.json();
       ContentMarkValidator.schemaCache.set(url, schema);
       return schema;
@@ -45,7 +45,7 @@ export class ContentMarkValidator {
 
   async validate(content: string, schemaUrl?: string): Promise<ValidationResult> {
     const schema = await this.loadSchema(schemaUrl);
-    
+
     const result: ValidationResult = {
       valid: false,
       errors: [],
@@ -100,7 +100,7 @@ export class ContentMarkValidator {
 
       // Try to get ContentMark manifest
       const manifestUrl = new URL('/.well-known/contentmark.json', url).toString();
-      
+
       const response = await fetch(manifestUrl, {
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0'
@@ -148,7 +148,7 @@ export class ContentMarkValidator {
     } else {
       const policy = data.defaultUsagePolicy;
       const requiredPolicyFields = ['canSummarize', 'canTrain', 'canQuote', 'mustAttribute'];
-      
+
       requiredPolicyFields.forEach(field => {
         if (typeof policy[field] !== 'boolean') {
           result.errors.push(`defaultUsagePolicy.${field} must be a boolean`);
@@ -211,13 +211,13 @@ export class ContentMarkValidator {
 
   private checkLogicalConsistency(data: any, result: ValidationResult): void {
     // Check for conflicting policies
-    if (data.defaultUsagePolicy?.canSummarize === false && 
+    if (data.defaultUsagePolicy?.canSummarize === false &&
         data.visibility?.aiDiscovery === 'enhanced') {
       result.warnings.push('Conflicting settings: canSummarize is false but aiDiscovery is enhanced');
     }
 
     // Check attribution requirements
-    if (data.defaultUsagePolicy?.mustAttribute && 
+    if (data.defaultUsagePolicy?.mustAttribute &&
         !data.defaultUsagePolicy?.attributionTemplate) {
       result.warnings.push('Attribution required but no attributionTemplate provided');
     }
@@ -228,7 +228,7 @@ export class ContentMarkValidator {
     }
 
     // Check monetization completeness
-    if (data.monetization?.consultation?.available && 
+    if (data.monetization?.consultation?.available &&
         !data.monetization?.consultation?.bookingUrl) {
       result.warnings.push('Consultation marked as available but no bookingUrl provided');
     }
