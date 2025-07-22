@@ -520,5 +520,5 @@ contentmark generate --interactive
 
 *Join thousands of creators using ContentMark to monetize and control AI usage of their content.*
 
-[![Follow on Twitter](https://img.shields.io/twitter/follow/contentmark?style=social)](https://twitter.com/contentmark)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/contentmark?style=social)](https://twitter.com/contentmarkai)
 [![Star on GitHub](https://img.shields.io/github/stars/contentmark/cli?style=social)](https://github.com/contentmark/cli)
