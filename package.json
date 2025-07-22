@@ -11,8 +11,9 @@
     "dev": "tsup src/cli.ts --format cjs --target node16 --watch",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
     "type-check": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm test",
     "release": "semantic-release"
@@ -53,6 +54,7 @@
     "commander": "^11.1.0",
     "fs-extra": "^11.1.1",
     "inquirer": "^8.2.6",
+    "js-yaml": "^4.1.0",
     "node-fetch": "^2.7.0",
     "ora": "^5.4.1"
   },
@@ -60,6 +62,7 @@
     "@types/fs-extra": "^11.0.2",
     "@types/inquirer": "^9.0.4",
     "@types/jest": "^29.5.5",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^16.18.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",

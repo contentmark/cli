@@ -12,30 +12,39 @@ export interface ValidationResult {
 
 export class ContentMarkValidator {
   private ajv: Ajv;
-  private schema: any;
+  private static schemaCache: Map<string, any> = new Map();
+  private static readonly DEFAULT_SCHEMA_URL = 'https://schema.contentmark.org/v1/manifest.json';
 
   constructor() {
     this.ajv = new Ajv({ allErrors: true });
     addFormats(this.ajv);
   }
 
-  async loadSchema(): Promise<void> {
-    if (this.schema) return;
+  private async loadSchema(schemaUrl?: string): Promise<any> {
+    const url = schemaUrl || ContentMarkValidator.DEFAULT_SCHEMA_URL;
     
+    if (ContentMarkValidator.schemaCache.has(url)) {
+      return ContentMarkValidator.schemaCache.get(url);
+    }
+
     try {
-      const response = await fetch('https://contentmark.org/schema/v1.0.0/contentmark.schema.json');
+      const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Failed to load schema: ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      this.schema = await response.json();
+      
+      const schema = await response.json();
+      ContentMarkValidator.schemaCache.set(url, schema);
+      return schema;
     } catch (error) {
-      // Fallback to built-in schema if remote fails
-      this.schema = this.getBuiltInSchema();
+      const fallbackSchema = this.getBuiltInSchema();
+      ContentMarkValidator.schemaCache.set(url, fallbackSchema);
+      return fallbackSchema;
     }
   }
 
-  async validate(content: string): Promise<ValidationResult> {
-    await this.loadSchema();
+  async validate(content: string, schemaUrl?: string): Promise<ValidationResult> {
+    const schema = await this.loadSchema(schemaUrl);
     
     const result: ValidationResult = {
       valid: false,
@@ -57,7 +66,7 @@ export class ContentMarkValidator {
       result.manifest = data;
 
       // Validate against schema
-      const validate = this.ajv.compile(this.schema);
+      const validate = this.ajv.compile(schema);
       const isValid = validate(data);
 
       if (!isValid && validate.errors) {

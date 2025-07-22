@@ -1,8 +1,8 @@
-import fetch from 'node-fetch';
 import { ContentMarkValidator } from './validator';
 
 export interface CheckResult {
   found: boolean;
+  method?: string;
   foundAt?: string;
   discoveryMethod?: 'well-known' | 'html-link' | 'http-header';
   manifestUrl?: string;
@@ -14,9 +14,11 @@ export interface CheckResult {
 
 export class URLChecker {
   private validator: ContentMarkValidator;
+  private fetch: any;
 
-  constructor() {
+  constructor(fetchImpl?: any) {
     this.validator = new ContentMarkValidator();
+    this.fetch = fetchImpl || (global as any).fetch || require('node-fetch');
   }
 
   async checkWebsite(url: string): Promise<CheckResult> {
@@ -27,11 +29,15 @@ export class URLChecker {
 
     try {
       const baseURL = new URL(url);
+      const allErrors: string[] = [];
       
       // Method 1: Check .well-known location
       const wellKnownResult = await this.checkWellKnown(baseURL);
       if (wellKnownResult.found) {
         return wellKnownResult;
+      }
+      if (wellKnownResult.errors) {
+        allErrors.push(...wellKnownResult.errors);
       }
 
       // Method 2: Check HTML <link> element
@@ -39,17 +45,26 @@ export class URLChecker {
       if (htmlLinkResult.found) {
         return htmlLinkResult;
       }
+      if (htmlLinkResult.errors) {
+        allErrors.push(...htmlLinkResult.errors);
+      }
 
       // Method 3: Check HTTP headers
       const httpHeaderResult = await this.checkHTTPHeaders(baseURL);
       if (httpHeaderResult.found) {
         return httpHeaderResult;
       }
+      if (httpHeaderResult.errors) {
+        allErrors.push(...httpHeaderResult.errors);
+      }
 
-      return { found: false };
+      return { found: false, errors: allErrors };
 
     } catch (error: any) {
-      throw new Error(`Failed to check website: ${error.message}`);
+      return {
+        found: false,
+        errors: [error.message]
+      };
     }
   }
 
@@ -57,7 +72,7 @@ export class URLChecker {
     const manifestUrl = new URL('/.well-known/contentmark.json', baseURL).toString();
     
     try {
-      const response = await fetch(manifestUrl, {
+      const response = await this.fetch(manifestUrl, {
         method: 'GET',
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0',
@@ -71,6 +86,7 @@ export class URLChecker {
         
         return {
           found: true,
+          method: 'well-known',
           foundAt: manifestUrl,
           discoveryMethod: 'well-known',
           manifestUrl: manifestUrl,
@@ -81,7 +97,7 @@ export class URLChecker {
         };
       }
 
-      // If 404, continue to other methods
+      // If 404, continue to other methods silently
       if (response.status === 404) {
         return { found: false };
       }
@@ -98,14 +114,14 @@ export class URLChecker {
       };
 
     } catch (error) {
-      // Network error, continue to other methods
-      return { found: false };
+      // Network error - return error for propagation
+      return { found: false, errors: [(error as Error).message] };
     }
   }
 
   private async checkHTMLLink(baseURL: URL): Promise<CheckResult> {
     try {
-      const response = await fetch(baseURL.toString(), {
+      const response = await this.fetch(baseURL.toString(), {
         method: 'GET',
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0',
@@ -140,7 +156,7 @@ export class URLChecker {
 
           // Try to fetch the manifest
           try {
-            const manifestResponse = await fetch(manifestUrl, {
+            const manifestResponse = await this.fetch(manifestUrl, {
               method: 'GET',
               headers: {
                 'User-Agent': 'ContentMark-CLI/1.0.0',
@@ -154,6 +170,7 @@ export class URLChecker {
               
               return {
                 found: true,
+                method: 'html-link',
                 foundAt: baseURL.toString(),
                 discoveryMethod: 'html-link',
                 manifestUrl: manifestUrl,
@@ -173,13 +190,13 @@ export class URLChecker {
       return { found: false };
 
     } catch (error) {
-      return { found: false };
+      return { found: false, errors: [(error as Error).message] };
     }
   }
 
   private async checkHTTPHeaders(baseURL: URL): Promise<CheckResult> {
     try {
-      const response = await fetch(baseURL.toString(), {
+      const response = await this.fetch(baseURL.toString(), {
         method: 'HEAD',
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0'
@@ -210,7 +227,7 @@ export class URLChecker {
 
         // Try to fetch the manifest
         try {
-          const manifestResponse = await fetch(manifestUrl, {
+          const manifestResponse = await this.fetch(manifestUrl, {
             method: 'GET',
             headers: {
               'User-Agent': 'ContentMark-CLI/1.0.0',
@@ -224,6 +241,7 @@ export class URLChecker {
             
             return {
               found: true,
+              method: 'http-header',
               foundAt: baseURL.toString(),
               discoveryMethod: 'http-header',
               manifestUrl: manifestUrl,
@@ -241,7 +259,7 @@ export class URLChecker {
       return { found: false };
 
     } catch (error) {
-      return { found: false };
+      return { found: false, errors: [(error as Error).message] };
     }
   }
 
@@ -331,5 +349,23 @@ export class URLChecker {
       chunks.push(array.slice(i, i + size));
     }
     return chunks;
+  }
+
+  async checkMultipleWebsites(urls: string[]): Promise<[string, CheckResult][]> {
+    const results: [string, CheckResult][] = [];
+    
+    for (const url of urls) {
+      try {
+        const result = await this.checkWebsite(url);
+        results.push([url, result]);
+      } catch (error) {
+        results.push([url, {
+          found: false,
+          errors: [(error as Error).message]
+        }]);
+      }
+    }
+    
+    return results;
   }
 }

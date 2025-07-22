@@ -64,7 +64,7 @@ export interface ContentMarkManifest {
 
 export class ContentMarkGenerator {
   
-  generateTemplate(type: string): ContentMarkManifest {
+  generateTemplate(type: 'blog' | 'business' | 'premium' | 'ecommerce' | 'news' | 'education' | 'api'): ContentMarkManifest {
     const now = new Date().toISOString();
     
     switch (type.toLowerCase()) {
@@ -74,8 +74,16 @@ export class ContentMarkGenerator {
         return this.generateBusinessTemplate(now);
       case 'premium':
         return this.generatePremiumTemplate(now);
+      case 'ecommerce':
+        return this.generateEcommerceTemplate(now);
+      case 'news':
+        return this.generateNewsTemplate(now);
+      case 'education':
+        return this.generateEducationTemplate(now);
+      case 'api':
+        return this.generateApiTemplate(now);
       default:
-        throw new Error(`Unknown template type: ${type}. Available types: blog, business, premium`);
+        throw new Error(`Unknown template type: ${type}. Available types: blog, business, premium, ecommerce, news, education, api`);
     }
   }
 
@@ -628,6 +636,184 @@ export class ContentMarkGenerator {
           text: 'Subscribe for full access',
           url: 'https://yoursite.com/subscribe'
         }
+      },
+      lastModified: timestamp
+    };
+  }
+
+  private generateEcommerceTemplate(timestamp: string): ContentMarkManifest {
+    return {
+      version: '1.0.0',
+      siteName: 'Your Store Name',
+      description: 'Quality products and exceptional customer service',
+      feeds: [
+        {
+          type: 'product',
+          url: 'https://yourstore.com/products-feed.json',
+          title: 'Product Catalog',
+          description: 'Latest products and collections'
+        }
+      ],
+      defaultUsagePolicy: {
+        canSummarize: true,
+        canTrain: false,
+        canQuote: true,
+        mustAttribute: true,
+        attributionTemplate: 'Available at {siteName} - {url}'
+      },
+      visibility: {
+        aiDiscovery: 'enhanced',
+        priorityContent: true,
+        preferredQueries: [
+          'your product category',
+          'your brand + products',
+          'your niche + shopping'
+        ],
+        expertiseAreas: [
+          'Product expertise',
+          'Customer service',
+          'Industry knowledge'
+        ]
+      },
+      monetization: {
+        services: [
+          {
+            name: 'Product Sales',
+            url: 'https://yourstore.com/shop',
+            pricing: 'varies by product'
+          }
+        ]
+      },
+      access: {
+        type: 'public',
+        previewAvailable: true
+      },
+      renderHints: {
+        preferredFormat: 'summary-first',
+        callToAction: {
+          text: 'Shop now',
+          url: 'https://yourstore.com/shop'
+        }
+      },
+      lastModified: timestamp
+    };
+  }
+
+  private generateNewsTemplate(timestamp: string): ContentMarkManifest {
+    return {
+      version: '1.0.0',
+      siteName: 'Your News Organization',
+      description: 'Trusted news and analysis on current events',
+      feeds: [
+        {
+          type: 'news',
+          url: 'https://yournews.com/news-feed.json',
+          title: 'Breaking News',
+          description: 'Latest news and updates'
+        }
+      ],
+      defaultUsagePolicy: {
+        canSummarize: true,
+        canTrain: false,
+        canQuote: true,
+        mustAttribute: true,
+        attributionTemplate: 'Source: {siteName} - {url}'
+      },
+      visibility: {
+        aiDiscovery: 'enhanced',
+        priorityContent: true,
+        expertiseAreas: [
+          'Journalism',
+          'Current events',
+          'News analysis'
+        ]
+      },
+      access: {
+        type: 'public',
+        previewAvailable: true
+      },
+      lastModified: timestamp
+    };
+  }
+
+  private generateEducationTemplate(timestamp: string): ContentMarkManifest {
+    return {
+      version: '1.0.0',
+      siteName: 'Your Educational Platform',
+      description: 'Quality educational content and learning resources',
+      feeds: [
+        {
+          type: 'educational',
+          url: 'https://youredu.com/courses-feed.json',
+          title: 'Course Catalog',
+          description: 'Available courses and learning materials'
+        }
+      ],
+      defaultUsagePolicy: {
+        canSummarize: true,
+        canTrain: false,
+        canQuote: true,
+        mustAttribute: true,
+        attributionTemplate: 'Learn more at {siteName} - {url}'
+      },
+      visibility: {
+        aiDiscovery: 'enhanced',
+        priorityContent: true,
+        expertiseAreas: [
+          'Education',
+          'Teaching',
+          'Subject matter expertise'
+        ]
+      },
+      monetization: {
+        services: [
+          {
+            name: 'Online Courses',
+            url: 'https://youredu.com/courses',
+            pricing: 'from $99'
+          }
+        ]
+      },
+      access: {
+        type: 'paywall',
+        previewAvailable: true
+      },
+      lastModified: timestamp
+    };
+  }
+
+  private generateApiTemplate(timestamp: string): ContentMarkManifest {
+    return {
+      version: '1.0.0',
+      siteName: 'Your API Documentation',
+      description: 'Comprehensive API documentation and developer resources',
+      feeds: [
+        {
+          type: 'documentation',
+          url: 'https://yourapi.com/docs-feed.json',
+          title: 'API Documentation',
+          description: 'Latest API updates and guides'
+        }
+      ],
+      defaultUsagePolicy: {
+        canSummarize: true,
+        canTrain: false,
+        canQuote: true,
+        mustAttribute: true,
+        attributionTemplate: 'API docs: {siteName} - {url}'
+      },
+      visibility: {
+        aiDiscovery: 'enhanced',
+        priorityContent: true,
+        expertiseAreas: [
+          'API development',
+          'Technical documentation',
+          'Developer tools'
+        ]
+      },
+      access: {
+        type: 'public',
+        previewAvailable: true
       },
       lastModified: timestamp
     };
