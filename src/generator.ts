@@ -624,3 +624,4 @@ export class ContentMarkGenerator {
       lastModified: timestamp
     };
   }
+}

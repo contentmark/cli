@@ -1,4 +1,4 @@
-import Ajv from 'ajv';
+import Ajv, { ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
 import fetch from 'node-fetch';
 
@@ -13,6 +13,7 @@ export interface ValidationResult {
 export class ContentMarkValidator {
   private ajv: Ajv;
   private schema: any;
+  private compiledValidator: ValidateFunction | null = null;
 
   constructor() {
     this.ajv = new Ajv({ allErrors: true });
@@ -20,7 +21,7 @@ export class ContentMarkValidator {
   }
 
   async loadSchema(): Promise<void> {
-    if (this.schema) return;
+    if (this.schema && this.compiledValidator) return;
     
     try {
       const response = await fetch('https://contentmark.org/schema/v1.0.0/contentmark.schema.json');
@@ -28,9 +29,10 @@ export class ContentMarkValidator {
         throw new Error(`Failed to load schema: ${response.status}`);
       }
       this.schema = await response.json();
+      this.compiledValidator = this.ajv.compile(this.schema);
     } catch (error) {
-      // Fallback to built-in schema if remote fails
       this.schema = this.getBuiltInSchema();
+      this.compiledValidator = this.ajv.compile(this.schema);
     }
   }
 
@@ -50,18 +52,20 @@ export class ContentMarkValidator {
       try {
         data = JSON.parse(content);
       } catch (parseError) {
-        result.errors.push(`Invalid JSON: ${parseError.message}`);
+        result.errors.push(`Invalid JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
         return result;
       }
 
       result.manifest = data;
 
       // Validate against schema
-      const validate = this.ajv.compile(this.schema);
-      const isValid = validate(data);
+      if (!this.compiledValidator) {
+        throw new Error('Schema not loaded. Call loadSchema() first.');
+      }
+      const isValid = this.compiledValidator(data);
 
-      if (!isValid && validate.errors) {
-        validate.errors.forEach(error => {
+      if (!isValid && this.compiledValidator.errors) {
+        this.compiledValidator.errors.forEach(error => {
           const path = error.instancePath || error.schemaPath;
           result.errors.push(`${path}: ${error.message}`);
         });
@@ -77,7 +81,7 @@ export class ContentMarkValidator {
       return result;
 
     } catch (error) {
-      result.errors.push(`Validation failed: ${error.message}`);
+      result.errors.push(`Validation failed: ${error instanceof Error ? error.message : String(error)}`);
       return result;
     }
   }
@@ -95,8 +99,7 @@ export class ContentMarkValidator {
       const response = await fetch(manifestUrl, {
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0'
-        },
-        timeout: 10000
+        }
       });
 
       if (!response.ok) {
@@ -114,7 +117,7 @@ export class ContentMarkValidator {
     } catch (error) {
       return {
         valid: false,
-        errors: [`Network error: ${error.message}`],
+        errors: [`Network error: ${error instanceof Error ? error.message : String(error)}`],
         warnings: [],
         suggestions: []
       };
@@ -176,7 +179,7 @@ export class ContentMarkValidator {
 
     // Check feeds URLs
     if (data.feeds && Array.isArray(data.feeds)) {
-      data.feeds.forEach((feed, index) => {
+      data.feeds.forEach((feed: any, index: number) => {
         if (feed.url) {
           checkURL(feed.url, `feeds[${index}].url`);
         }
@@ -192,7 +195,7 @@ export class ContentMarkValidator {
         checkURL(data.monetization.consultation.bookingUrl, 'monetization.consultation.bookingUrl');
       }
       if (data.monetization.services) {
-        data.monetization.services.forEach((service, index) => {
+        data.monetization.services.forEach((service: any, index: number) => {
           if (service.url) {
             checkURL(service.url, `monetization.services[${index}].url`);
           }
