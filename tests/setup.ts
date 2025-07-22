@@ -537,20 +537,20 @@ export class NetworkSimulator {
 export class TestEnvironment {
   static setupOfflineMode() {
     // Mock fetch to simulate offline environment
-    global.fetch = jest.fn(() => 
+    (global as any).fetch = jest.fn(() => 
       Promise.reject(new Error('Network unavailable'))
     );
   }
 
   static setupLimitedBandwidth() {
     // Mock fetch with artificial delays
-    global.fetch = NetworkSimulator.createSlowResponse(5000);
+    (global as any).fetch = NetworkSimulator.createSlowResponse(5000);
   }
 
   static restoreNetworking() {
     // Restore original fetch if it was mocked
-    if (jest.isMockFunction(global.fetch)) {
-      (global.fetch as jest.Mock).mockRestore();
+    if (jest.isMockFunction((global as any).fetch)) {
+      ((global as any).fetch as jest.Mock).mockRestore();
     }
   }
 }

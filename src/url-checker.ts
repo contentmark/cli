@@ -48,7 +48,7 @@ export class URLChecker {
 
       return { found: false };
 
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to check website: ${error.message}`);
     }
   }
@@ -62,8 +62,7 @@ export class URLChecker {
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0',
           'Accept': 'application/json'
-        },
-        timeout: 10000
+        }
       });
 
       if (response.ok) {
@@ -111,8 +110,7 @@ export class URLChecker {
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0',
           'Accept': 'text/html'
-        },
-        timeout: 10000
+        }
       });
 
       if (!response.ok) {
@@ -147,8 +145,7 @@ export class URLChecker {
               headers: {
                 'User-Agent': 'ContentMark-CLI/1.0.0',
                 'Accept': 'application/json'
-              },
-              timeout: 10000
+              }
             });
 
             if (manifestResponse.ok) {
@@ -186,8 +183,7 @@ export class URLChecker {
         method: 'HEAD',
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0'
-        },
-        timeout: 10000
+        }
       });
 
       if (!response.ok) {
@@ -219,8 +215,7 @@ export class URLChecker {
             headers: {
               'User-Agent': 'ContentMark-CLI/1.0.0',
               'Accept': 'application/json'
-            },
-            timeout: 10000
+            }
           });
 
           if (manifestResponse.ok) {
@@ -311,7 +306,7 @@ export class URLChecker {
         } catch (error) {
           return [url, { 
             found: false, 
-            errors: [error.message] 
+            errors: [(error as any).message] 
           }] as [string, CheckResult];
         }
       });

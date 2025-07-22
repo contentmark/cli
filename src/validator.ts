@@ -49,7 +49,7 @@ export class ContentMarkValidator {
       let data;
       try {
         data = JSON.parse(content);
-      } catch (parseError) {
+      } catch (parseError: any) {
         result.errors.push(`Invalid JSON: ${parseError.message}`);
         return result;
       }
@@ -61,7 +61,7 @@ export class ContentMarkValidator {
       const isValid = validate(data);
 
       if (!isValid && validate.errors) {
-        validate.errors.forEach(error => {
+        validate.errors.forEach((error: any) => {
           const path = error.instancePath || error.schemaPath;
           result.errors.push(`${path}: ${error.message}`);
         });
@@ -76,7 +76,7 @@ export class ContentMarkValidator {
       result.valid = result.errors.length === 0;
       return result;
 
-    } catch (error) {
+    } catch (error: any) {
       result.errors.push(`Validation failed: ${error.message}`);
       return result;
     }
@@ -95,8 +95,7 @@ export class ContentMarkValidator {
       const response = await fetch(manifestUrl, {
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0'
-        },
-        timeout: 10000
+        }
       });
 
       if (!response.ok) {
@@ -111,7 +110,7 @@ export class ContentMarkValidator {
       const content = await response.text();
       return this.validate(content);
 
-    } catch (error) {
+    } catch (error: any) {
       return {
         valid: false,
         errors: [`Network error: ${error.message}`],
@@ -176,7 +175,7 @@ export class ContentMarkValidator {
 
     // Check feeds URLs
     if (data.feeds && Array.isArray(data.feeds)) {
-      data.feeds.forEach((feed, index) => {
+      data.feeds.forEach((feed: any, index: number) => {
         if (feed.url) {
           checkURL(feed.url, `feeds[${index}].url`);
         }
@@ -192,7 +191,7 @@ export class ContentMarkValidator {
         checkURL(data.monetization.consultation.bookingUrl, 'monetization.consultation.bookingUrl');
       }
       if (data.monetization.services) {
-        data.monetization.services.forEach((service, index) => {
+        data.monetization.services.forEach((service: any, index: number) => {
           if (service.url) {
             checkURL(service.url, `monetization.services[${index}].url`);
           }

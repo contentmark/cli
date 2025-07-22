@@ -23,7 +23,7 @@ program
   .option('-u, --url <url>', 'Validate remote URL instead of local file')
   .option('-v, --verbose', 'Show detailed validation output')
   .option('--json', 'Output results as JSON')
-  .action(async (file, options) => {
+  .action(async (file: string, options: any) => {
     const spinner = ora('Validating ContentMark manifest...').start();
     
     try {
@@ -40,7 +40,7 @@ program
         }
         
         const content = readFileSync(file, 'utf-8');
-        result = validator.validate(content);
+        result = await validator.validate(content);
         spinner.succeed(`Validated ${file}`);
       }
 
@@ -59,21 +59,21 @@ program
 
       if (result.errors.length > 0) {
         console.log(chalk.red('\nErrors:'));
-        result.errors.forEach(error => {
+        result.errors.forEach((error: string) => {
           console.log(chalk.red(`  • ${error}`));
         });
       }
 
       if (result.warnings.length > 0) {
         console.log(chalk.yellow('\nWarnings:'));
-        result.warnings.forEach(warning => {
+        result.warnings.forEach((warning: string) => {
           console.log(chalk.yellow(`  ⚠ ${warning}`));
         });
       }
 
       if (result.suggestions.length > 0 && options.verbose) {
         console.log(chalk.cyan('\nSuggestions:'));
-        result.suggestions.forEach(suggestion => {
+        result.suggestions.forEach((suggestion: string) => {
           console.log(chalk.cyan(`  💡 ${suggestion}`));
         });
       }
@@ -84,7 +84,7 @@ program
 
       process.exit(result.valid ? 0 : 1);
 
-    } catch (error) {
+    } catch (error: any) {
       spinner.fail('Validation failed');
       console.error(chalk.red(`Error: ${error.message}`));
       process.exit(1);
@@ -123,7 +123,7 @@ program
       console.log(chalk.cyan(`💡 Remember to customize the generated file with your information`));
       console.log(chalk.gray(`\nValidate with: contentmark validate ${options.output}`));
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(chalk.red(`Error: ${error.message}`));
       process.exit(1);
     }
@@ -160,7 +160,7 @@ program
         } else {
           console.log(chalk.yellow('⚠ Manifest has validation issues'));
           if (result.errors) {
-            result.errors.forEach(error => {
+            result.errors.forEach((error: string) => {
               console.log(chalk.red(`  • ${error}`));
             });
           }
@@ -190,7 +190,7 @@ program
         console.log(chalk.cyan('Generate one with: contentmark generate --interactive'));
       }
 
-    } catch (error) {
+    } catch (error: any) {
       spinner.fail('Check failed');
       console.error(chalk.red(`Error: ${error.message}`));
       process.exit(1);
@@ -224,7 +224,7 @@ program
       console.log('  3. Validate with: contentmark validate');
       console.log('\nFor help: https://contentmark.org/docs/getting-started');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(chalk.red(`Error: ${error.message}`));
       process.exit(1);
     }
