@@ -391,4 +391,206 @@ declare global {
   namespace jest {
     interface Matchers<R> {
       toBeValidContentMark(): R;
-      toHaveValidationError(expectedError:
+      toHaveValidationError(expectedError: string): R;
+      toHaveValidationWarning(expectedWarning: string): R;
+      toHaveSuggestion(expectedSuggestion: string): R;
+    }
+  }
+}
+
+// Custom Jest matchers implementation
+expect.extend({
+  toBeValidContentMark(received) {
+    const pass = received && received.valid === true && received.errors.length === 0;
+    
+    if (pass) {
+      return {
+        message: () => `Expected validation result to be invalid, but it was valid`,
+        pass: true
+      };
+    } else {
+      const errors = received?.errors || [];
+      return {
+        message: () => `Expected validation result to be valid, but got errors: ${errors.join(', ')}`,
+        pass: false
+      };
+    }
+  },
+
+  toHaveValidationError(received, expectedError) {
+    const errors = received?.errors || [];
+    const pass = errors.some((error: string) => error.includes(expectedError));
+    
+    if (pass) {
+      return {
+        message: () => `Expected validation result not to have error "${expectedError}", but it did`,
+        pass: true
+      };
+    } else {
+      return {
+        message: () => `Expected validation result to have error "${expectedError}", but got: ${errors.join(', ')}`,
+        pass: false
+      };
+    }
+  },
+
+  toHaveValidationWarning(received, expectedWarning) {
+    const warnings = received?.warnings || [];
+    const pass = warnings.some((warning: string) => warning.includes(expectedWarning));
+    
+    if (pass) {
+      return {
+        message: () => `Expected validation result not to have warning "${expectedWarning}", but it did`,
+        pass: true
+      };
+    } else {
+      return {
+        message: () => `Expected validation result to have warning "${expectedWarning}", but got: ${warnings.join(', ')}`,
+        pass: false
+      };
+    }
+  },
+
+  toHaveSuggestion(received, expectedSuggestion) {
+    const suggestions = received?.suggestions || [];
+    const pass = suggestions.some((suggestion: string) => suggestion.includes(expectedSuggestion));
+    
+    if (pass) {
+      return {
+        message: () => `Expected validation result not to have suggestion "${expectedSuggestion}", but it did`,
+        pass: true
+      };
+    } else {
+      return {
+        message: () => `Expected validation result to have suggestion "${expectedSuggestion}", but got: ${suggestions.join(', ')}`,
+        pass: false
+      };
+    }
+  }
+});
+
+/**
+ * Performance testing helper
+ */
+export async function measurePerformance<T>(
+  operation: () => Promise<T>,
+  maxTimeMs: number = 1000
+): Promise<{ result: T; timeMs: number; withinLimit: boolean }> {
+  const startTime = process.hrtime.bigint();
+  const result = await operation();
+  const endTime = process.hrtime.bigint();
+  
+  const timeMs = Number(endTime - startTime) / 1_000_000; // Convert to milliseconds
+  const withinLimit = timeMs <= maxTimeMs;
+  
+  return { result, timeMs, withinLimit };
+}
+
+/**
+ * Memory usage testing helper
+ */
+export function measureMemoryUsage<T>(operation: () => T): { result: T; memoryUsedMB: number } {
+  const initialMemory = process.memoryUsage().heapUsed;
+  const result = operation();
+  const finalMemory = process.memoryUsage().heapUsed;
+  
+  const memoryUsedMB = (finalMemory - initialMemory) / 1024 / 1024;
+  
+  return { result, memoryUsedMB };
+}
+
+/**
+ * Network simulation helpers for testing edge cases
+ */
+export class NetworkSimulator {
+  static createSlowResponse(delayMs: number = 2000) {
+    return jest.fn(() => 
+      new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            ok: true,
+            status: 200,
+            text: () => Promise.resolve('{"version":"1.0.0"}'),
+            json: () => Promise.resolve({ version: '1.0.0' })
+          });
+        }, delayMs);
+      })
+    );
+  }
+
+  static createFailingResponse(errorMessage: string = 'Network error') {
+    return jest.fn(() => Promise.reject(new Error(errorMessage)));
+  }
+
+  static createTimeoutResponse() {
+    return jest.fn(() => 
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000);
+      })
+    );
+  }
+}
+
+/**
+ * Test environment setup for different scenarios
+ */
+export class TestEnvironment {
+  static setupOfflineMode() {
+    // Mock fetch to simulate offline environment
+    global.fetch = jest.fn(() => 
+      Promise.reject(new Error('Network unavailable'))
+    );
+  }
+
+  static setupLimitedBandwidth() {
+    // Mock fetch with artificial delays
+    global.fetch = NetworkSimulator.createSlowResponse(5000);
+  }
+
+  static restoreNetworking() {
+    // Restore original fetch if it was mocked
+    if (jest.isMockFunction(global.fetch)) {
+      (global.fetch as jest.Mock).mockRestore();
+    }
+  }
+}
+
+/**
+ * File system test helpers
+ */
+export class FileSystemTestHelper {
+  static createMockFileSystem(files: Record<string, string>) {
+    const fs = require('fs');
+    
+    const originalReadFileSync = fs.readFileSync;
+    const originalExistsSync = fs.existsSync;
+    const originalWriteFileSync = fs.writeFileSync;
+
+    fs.readFileSync = jest.fn((path: string) => {
+      const normalizedPath = path.replace(/\\/g, '/');
+      if (files[normalizedPath]) {
+        return files[normalizedPath];
+      }
+      throw new Error(`ENOENT: no such file or directory, open '${path}'`);
+    });
+
+    fs.existsSync = jest.fn((path: string) => {
+      const normalizedPath = path.replace(/\\/g, '/');
+      return normalizedPath in files;
+    });
+
+    fs.writeFileSync = jest.fn((path: string, content: string) => {
+      const normalizedPath = path.replace(/\\/g, '/');
+      files[normalizedPath] = content;
+    });
+
+    return {
+      restore: () => {
+        fs.readFileSync = originalReadFileSync;
+        fs.existsSync = originalExistsSync;
+        fs.writeFileSync = originalWriteFileSync;
+      },
+      getFiles: () => ({ ...files })
+    };
+  }
+}
