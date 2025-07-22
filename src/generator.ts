@@ -37,6 +37,11 @@ export interface ContentMarkManifest {
       url: string;
       pricing?: string;
     }>;
+    subscription?: {
+      platform: string;
+      url: string;
+      price: string;
+    };
   };
   access?: {
     type: 'public' | 'authenticated' | 'paywall';
@@ -197,7 +202,7 @@ export class ContentMarkGenerator {
       }
     ]);
 
-    let access = { type: accessType.type };
+    let access: any = { type: accessType.type };
     if (accessType.type === 'authenticated') {
       const loginInfo = await inquirer.prompt([
         {
@@ -445,13 +450,13 @@ export class ContentMarkGenerator {
         type: 'input',
         name: 'expertiseAreas',
         message: 'Your expertise areas (comma-separated):',
-        filter: (input) => input ? input.split(',').map(s => s.trim()).filter(s => s) : []
+        filter: (input: string) => input ? input.split(',').map((s: string) => s.trim()).filter((s: string) => s) : []
       },
       {
         type: 'input',
         name: 'preferredQueries',
         message: 'Preferred search queries (comma-separated):',
-        filter: (input) => input ? input.split(',').map(s => s.trim()).filter(s => s) : []
+        filter: (input: string) => input ? input.split(',').map((s: string) => s.trim()).filter((s: string) => s) : []
       },
       {
         type: 'number',
@@ -624,3 +629,4 @@ export class ContentMarkGenerator {
       lastModified: timestamp
     };
   }
+}
