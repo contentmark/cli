@@ -7,6 +7,7 @@ import { readFileSync, existsSync, writeFileSync } from 'fs-extra';
 import { ContentMarkValidator } from './validator';
 import { ContentMarkGenerator } from './generator';
 import { URLChecker } from './url-checker';
+import { getFormatter } from './formatters';
 
 const program = new Command();
 
@@ -23,6 +24,7 @@ program
   .option('-u, --url <url>', 'Validate remote URL instead of local file')
   .option('-v, --verbose', 'Show detailed validation output')
   .option('--json', 'Output results as JSON')
+  .option('--format <format>', 'Output format (json, yaml, summary)')
   .action(async (file: string, options: any) => {
     const spinner = ora('Validating ContentMark manifest...').start();
     
@@ -44,8 +46,10 @@ program
         spinner.succeed(`Validated ${file}`);
       }
 
-      if (options.json) {
-        console.log(JSON.stringify(result, null, 2));
+      if (options.json || options.format) {
+        const format = options.format || 'json';
+        const formatter = getFormatter(format);
+        console.log(formatter.formatValidation(result));
         process.exit(result.valid ? 0 : 1);
       }
 
@@ -95,7 +99,7 @@ program
 program
   .command('generate')
   .description('Generate a ContentMark manifest file')
-  .option('-t, --type <type>', 'Template type (blog, business, premium)', 'blog')
+  .option('-t, --type <type>', 'Template type (blog, business, premium, ecommerce, news, education, api)', 'blog')
   .option('-o, --output <file>', 'Output file path', '.well-known/contentmark.json')
   .option('-i, --interactive', 'Interactive generation with prompts')
   .option('--overwrite', 'Overwrite existing file')
@@ -201,7 +205,7 @@ program
 program
   .command('init')
   .description('Initialize ContentMark in current directory')
-  .option('--type <type>', 'Template type (blog, business, premium)', 'blog')
+  .option('--type <type>', 'Template type (blog, business, premium, ecommerce, news, education, api)', 'blog')
   .action(async (options) => {
     try {
       const spinner = ora('Initializing ContentMark...').start();
