@@ -8,8 +8,10 @@ import { ContentMarkValidator } from './validator';
 import { ContentMarkGenerator } from './generator';
 import { URLChecker } from './url-checker';
 import { getFormatter } from './formatters';
+import { ConfigManager } from './config';
 
 const program = new Command();
+const config = new ConfigManager();
 
 program
   .name('contentmark')
@@ -26,10 +28,16 @@ program
   .option('--json', 'Output results as JSON')
   .option('--format <format>', 'Output format (json, yaml, summary)')
   .action(async (file: string, options: any) => {
+    const outputConfig = config.getOutputConfig();
+    if (!options.format && !options.json) {
+      options.format = outputConfig.format === 'json' ? undefined : outputConfig.format;
+    }
+    options.verbose = options.verbose || outputConfig.verbose;
     const spinner = ora('Validating ContentMark manifest...').start();
     
     try {
-      const validator = new ContentMarkValidator();
+      const validationConfig = config.getValidationConfig();
+      const validator = new ContentMarkValidator(validationConfig.schemaUrl);
       let result;
 
       if (options.url) {
@@ -46,9 +54,13 @@ program
         spinner.succeed(`Validated ${file}`);
       }
 
-      if (options.json || options.format) {
-        const format = options.format || 'json';
-        const formatter = getFormatter(format);
+      if (options.json) {
+        console.log(JSON.stringify(result, null, 2));
+        process.exit(result.valid ? 0 : 1);
+      }
+      
+      if (options.format) {
+        const formatter = getFormatter(options.format);
         console.log(formatter.formatValidation(result));
         process.exit(result.valid ? 0 : 1);
       }
@@ -139,11 +151,14 @@ program
   .description('Check if a website supports ContentMark')
   .argument('<url>', 'Website URL to check')
   .option('--discovery', 'Show discovery method details')
+  .option('--timeout <ms>', 'Request timeout in milliseconds')
   .action(async (url, options) => {
+    const batchConfig = config.getBatchConfig();
+    const timeout = options.timeout || batchConfig.timeout;
     const spinner = ora(`Checking ${url} for ContentMark support...`).start();
     
     try {
-      const checker = new URLChecker();
+      const checker = new URLChecker(undefined, { timeout });
       const result = await checker.checkWebsite(url);
       
       spinner.stop();
@@ -234,6 +249,72 @@ program
     }
   });
 
+// Batch check command
+program
+  .command('batch-check')
+  .description('Check multiple websites for ContentMark support')
+  .argument('<file>', 'File containing URLs (one per line)')
+  .option('--concurrency <num>', 'Number of concurrent requests', '5')
+  .option('--output <file>', 'Output results to file')
+  .option('--format <format>', 'Output format (json, yaml, summary)', 'json')
+  .action(async (file, options) => {
+    try {
+      if (!existsSync(file)) {
+        console.error(chalk.red(`File not found: ${file}`));
+        process.exit(1);
+      }
+
+      const content = readFileSync(file, 'utf-8');
+      const urls = content.split('\n').filter(line => line.trim()).map(line => line.trim());
+      
+      if (urls.length === 0) {
+        console.error(chalk.red('No URLs found in file'));
+        process.exit(1);
+      }
+
+      console.log(chalk.blue(`🔍 Checking ${urls.length} websites for ContentMark support...\n`));
+      
+      const batchConfig = config.getBatchConfig();
+      const concurrency = parseInt(options.concurrency) || batchConfig.concurrency || 5;
+      const checker = new URLChecker(undefined, { timeout: batchConfig.timeout });
+      
+      const spinner = ora(`Checking websites... (0/${urls.length})`).start();
+      
+      const results = await checker.batchCheck(urls, {
+        concurrency,
+        onProgress: (done, total) => {
+          spinner.text = `Checking websites... (${done}/${total})`;
+        }
+      });
+
+      spinner.succeed(`Completed checking ${urls.length} websites`);
+
+      const formatter = getFormatter(options.format);
+      const resultArray = Array.from(results.entries());
+
+      const output = formatter.formatBatch(resultArray);
+
+      if (options.output) {
+        writeFileSync(options.output, output);
+        console.log(chalk.green(`✅ Results saved to ${options.output}`));
+      } else {
+        console.log(output);
+      }
+
+      const found = resultArray.filter(([, result]) => result.found).length;
+      const notFound = resultArray.length - found;
+      
+      console.log(chalk.cyan('\n📊 Summary:'));
+      console.log(`  ${chalk.green('✅ Found:')} ${found}`);
+      console.log(`  ${chalk.red('❌ Not Found:')} ${notFound}`);
+      console.log(`  ${chalk.blue('📈 Success Rate:')} ${((found / resultArray.length) * 100).toFixed(1)}%`);
+
+    } catch (error: any) {
+      console.error(chalk.red(`Error: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
 // Info command
 program
   .command('info')
@@ -254,6 +335,7 @@ program
     console.log('  contentmark validate [file]     Validate manifest file');
     console.log('  contentmark generate            Generate manifest template');
     console.log('  contentmark check <url>         Check website for ContentMark');
+    console.log('  contentmark batch-check <file>  Check multiple websites from file');
     console.log('  contentmark init                Initialize in current directory');
     console.log('  contentmark info                Show this information\n');
     

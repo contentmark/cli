@@ -15,10 +15,12 @@ export interface CheckResult {
 export class URLChecker {
   private validator: ContentMarkValidator;
   private fetch: any;
+  private options: { timeout?: number };
 
-  constructor(fetchImpl?: any) {
+  constructor(fetchImpl?: any, options: { timeout?: number } = {}) {
     this.validator = new ContentMarkValidator();
     this.fetch = fetchImpl || (global as any).fetch || require('node-fetch');
+    this.options = options;
   }
 
   async checkWebsite(url: string): Promise<CheckResult> {
@@ -77,7 +79,8 @@ export class URLChecker {
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0',
           'Accept': 'application/json'
-        }
+        },
+        timeout: this.options.timeout || 10000
       });
 
       if (response.ok) {
@@ -126,7 +129,8 @@ export class URLChecker {
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0',
           'Accept': 'text/html'
-        }
+        },
+        timeout: this.options.timeout || 10000
       });
 
       if (!response.ok) {
@@ -161,7 +165,8 @@ export class URLChecker {
               headers: {
                 'User-Agent': 'ContentMark-CLI/1.0.0',
                 'Accept': 'application/json'
-              }
+              },
+              timeout: this.options.timeout || 10000
             });
 
             if (manifestResponse.ok) {
@@ -200,7 +205,8 @@ export class URLChecker {
         method: 'HEAD',
         headers: {
           'User-Agent': 'ContentMark-CLI/1.0.0'
-        }
+        },
+        timeout: this.options.timeout || 10000
       });
 
       if (!response.ok) {
@@ -232,7 +238,8 @@ export class URLChecker {
             headers: {
               'User-Agent': 'ContentMark-CLI/1.0.0',
               'Accept': 'application/json'
-            }
+            },
+            timeout: this.options.timeout || 10000
           });
 
           if (manifestResponse.ok) {
@@ -309,19 +316,29 @@ export class URLChecker {
     };
   }
 
-  async batchCheck(urls: string[]): Promise<Map<string, CheckResult>> {
+  async batchCheck(urls: string[], options: { 
+    concurrency?: number, 
+    onProgress?: (completed: number, total: number) => void 
+  } = {}): Promise<Map<string, CheckResult>> {
     const results = new Map<string, CheckResult>();
-    
-    // Process URLs in parallel with some concurrency limit
-    const concurrency = 5;
+    const concurrency = options.concurrency || 5;
     const chunks = this.chunkArray(urls, concurrency);
+    let completed = 0;
     
     for (const chunk of chunks) {
       const promises = chunk.map(async (url) => {
         try {
           const result = await this.checkWebsite(url);
+          completed++;
+          if (options.onProgress) {
+            options.onProgress(completed, urls.length);
+          }
           return [url, result] as [string, CheckResult];
         } catch (error) {
+          completed++;
+          if (options.onProgress) {
+            options.onProgress(completed, urls.length);
+          }
           return [url, { 
             found: false, 
             errors: [(error as any).message] 

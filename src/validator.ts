@@ -15,13 +15,13 @@ export class ContentMarkValidator {
   private static schemaCache: Map<string, any> = new Map();
   private static readonly DEFAULT_SCHEMA_URL = 'https://schema.contentmark.org/v1/manifest.json';
 
-  constructor() {
+  constructor(private customSchemaUrl?: string) {
     this.ajv = new Ajv({ allErrors: true });
     addFormats(this.ajv);
   }
 
   private async loadSchema(schemaUrl?: string): Promise<any> {
-    const url = schemaUrl || ContentMarkValidator.DEFAULT_SCHEMA_URL;
+    const url = schemaUrl || this.customSchemaUrl || ContentMarkValidator.DEFAULT_SCHEMA_URL;
     
     if (ContentMarkValidator.schemaCache.has(url)) {
       return ContentMarkValidator.schemaCache.get(url);
