@@ -24,6 +24,9 @@ export interface ContentMarkManifest {
     boostScore?: number;
     expertiseAreas?: string[];
     aiOptimizedDescription?: string;
+    aiSummaryOptimized?: boolean;
+    topicCategories?: string[];
+    keyEntities?: string[];
   };
   monetization?: {
     tipJar?: string;
