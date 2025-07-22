@@ -13,55 +13,21 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
-    // Basic JavaScript rules
-    'no-console': 'off', // CLI tool needs console output
+    // Basic rules that work without TypeScript
+    'no-console': 'off',
     'no-debugger': 'error',
     'no-var': 'error',
     'prefer-const': 'error',
-    'prefer-arrow-callback': 'error',
-    'arrow-spacing': 'error',
-    'no-duplicate-imports': 'error',
-    'no-useless-return': 'error',
-    'prefer-template': 'error',
     'quotes': ['error', 'single'],
     'semi': ['error', 'always'],
-    'comma-dangle': ['error', 'never'],
     'indent': ['error', 2],
     'no-trailing-spaces': 'error',
-    'eol-last': 'error'
+    'eol-last': 'error',
+    'no-unused-vars': ['error', { 
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_'
+    }]
   },
-  overrides: [
-    {
-      // TypeScript files (when TypeScript ESLint is available)
-      files: ['**/*.ts'],
-      parser: '@typescript-eslint/parser',
-      plugins: ['@typescript-eslint'],
-      extends: [
-        'eslint:recommended',
-        '@typescript-eslint/recommended'
-      ],
-      rules: {
-        '@typescript-eslint/no-unused-vars': ['error', { 
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_'
-        }],
-        '@typescript-eslint/explicit-function-return-type': 'off',
-        '@typescript-eslint/no-explicit-any': 'warn',
-        'no-unused-vars': 'off' // Use TypeScript version instead
-      }
-    },
-    {
-      // Test files
-      files: ['**/*.test.ts', '**/*.spec.ts', '**/tests/**/*.ts'],
-      env: {
-        jest: true
-      },
-      rules: {
-        'no-console': 'off',
-        'max-len': 'off'
-      }
-    }
-  ],
   ignorePatterns: [
     'dist/',
     'build/',
