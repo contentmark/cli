@@ -29,7 +29,7 @@ export class JsonFormatter extends OutputFormatter {
       manifestUrl: result.manifestUrl,
       errors: result.errors
     }));
-    
+
     return JSON.stringify({
       results: formatted,
       summary: {

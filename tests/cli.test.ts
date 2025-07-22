@@ -16,7 +16,7 @@ describe('CLI Integration Tests', () => {
   describe('validate command', () => {
     it('should validate a valid manifest file', async () => {
       const tempFile = createTempFile(JSON.stringify(TEST_MANIFESTS.VALID_BASIC));
-      
+
       try {
         const { stdout } = await execAsync(`node ${CLI_PATH} validate ${tempFile.path}`);
         expect(stdout).toContain('✅ Valid ContentMark manifest');
@@ -27,7 +27,7 @@ describe('CLI Integration Tests', () => {
 
     it('should reject invalid manifest file', async () => {
       const tempFile = createTempFile(JSON.stringify(TEST_MANIFESTS.INVALID_MISSING_FIELDS));
-      
+
       try {
         const result = await execAsync(`node ${CLI_PATH} validate ${tempFile.path}`).catch(e => e);
         expect(result.stdout || result.stderr).toContain('❌ Invalid ContentMark manifest');
@@ -38,7 +38,7 @@ describe('CLI Integration Tests', () => {
 
     it('should output JSON format when requested', async () => {
       const tempFile = createTempFile(JSON.stringify(TEST_MANIFESTS.VALID_BASIC));
-      
+
       try {
         const { stdout } = await execAsync(`node ${CLI_PATH} validate ${tempFile.path} --json`);
         const result = JSON.parse(stdout);
@@ -63,7 +63,7 @@ describe('CLI Integration Tests', () => {
       const tempPath = '/tmp/test-blog.json';
       const { stdout } = await execAsync(`node ${CLI_PATH} generate --type blog --output ${tempPath} --overwrite`);
       expect(stdout).toContain('✅ Generated ContentMark manifest');
-      
+
       const { stdout: catOutput } = await execAsync(`cat ${tempPath}`);
       const manifest = JSON.parse(catOutput);
       expect(manifest.siteName).toBe('Your Blog Name');
@@ -74,7 +74,7 @@ describe('CLI Integration Tests', () => {
       const tempPath = '/tmp/test-business.json';
       const { stdout } = await execAsync(`node ${CLI_PATH} generate --type business --output ${tempPath} --overwrite`);
       expect(stdout).toContain('✅ Generated ContentMark manifest');
-      
+
       const { stdout: catOutput } = await execAsync(`cat ${tempPath}`);
       const manifest = JSON.parse(catOutput);
       expect(manifest.siteName).toBe('Your Business Name');
@@ -85,7 +85,7 @@ describe('CLI Integration Tests', () => {
       const tempPath = '/tmp/test-premium.json';
       const { stdout } = await execAsync(`node ${CLI_PATH} generate --type premium --output ${tempPath} --overwrite`);
       expect(stdout).toContain('✅ Generated ContentMark manifest');
-      
+
       const { stdout: catOutput } = await execAsync(`cat ${tempPath}`);
       const manifest = JSON.parse(catOutput);
       expect(manifest.access.type).toBe('paywall');
@@ -104,11 +104,11 @@ describe('CLI Integration Tests', () => {
     it('should initialize ContentMark in directory', async () => {
       const tempDir = '/tmp/contentmark-test';
       await execAsync(`mkdir -p ${tempDir}`);
-      
+
       try {
         const { stdout } = await execAsync(`cd ${tempDir} && node ${ABSOLUTE_CLI_PATH} init`);
         expect(stdout).toContain('✅ ContentMark has been initialized in your project');
-        
+
         const { stdout: lsOutput } = await execAsync(`ls ${tempDir}/.well-known/`);
         expect(lsOutput).toContain('contentmark.json');
       } finally {

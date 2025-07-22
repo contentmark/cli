@@ -10,9 +10,9 @@ import { SummaryFormatter } from './summary';
 
 export function getFormatter(format: string): OutputFormatter {
   switch (format.toLowerCase()) {
-    case 'yaml': return new YamlFormatter();
-    case 'summary': return new SummaryFormatter();
-    case 'json':
-    default: return new JsonFormatter();
+  case 'yaml': return new YamlFormatter();
+  case 'summary': return new SummaryFormatter();
+  case 'json':
+  default: return new JsonFormatter();
   }
 }

@@ -34,7 +34,7 @@ program
     }
     options.verbose = options.verbose || outputConfig.verbose;
     const spinner = ora('Validating ContentMark manifest...').start();
-    
+
     try {
       const validationConfig = config.getValidationConfig();
       const validator = new ContentMarkValidator(validationConfig.schemaUrl);
@@ -48,7 +48,7 @@ program
           spinner.fail(`File not found: ${file}`);
           process.exit(1);
         }
-        
+
         const content = readFileSync(file, 'utf-8');
         result = await validator.validate(content);
         spinner.succeed(`Validated ${file}`);
@@ -58,7 +58,7 @@ program
         console.log(JSON.stringify(result, null, 2));
         process.exit(result.valid ? 0 : 1);
       }
-      
+
       if (options.format) {
         const formatter = getFormatter(options.format);
         console.log(formatter.formatValidation(result));
@@ -134,9 +134,9 @@ program
       }
 
       writeFileSync(options.output, JSON.stringify(manifest, null, 2));
-      
+
       console.log(chalk.green(`✅ Generated ContentMark manifest: ${options.output}`));
-      console.log(chalk.cyan(`💡 Remember to customize the generated file with your information`));
+      console.log(chalk.cyan('💡 Remember to customize the generated file with your information'));
       console.log(chalk.gray(`\nValidate with: contentmark validate ${options.output}`));
 
     } catch (error: any) {
@@ -156,17 +156,17 @@ program
     const batchConfig = config.getBatchConfig();
     const timeout = options.timeout || batchConfig.timeout;
     const spinner = ora(`Checking ${url} for ContentMark support...`).start();
-    
+
     try {
       const checker = new URLChecker(undefined, { timeout });
       const result = await checker.checkWebsite(url);
-      
+
       spinner.stop();
       console.log();
-      
+
       if (result.found) {
         console.log(chalk.green(`✅ ContentMark found at ${result.foundAt}`));
-        
+
         if (options.discovery) {
           console.log(chalk.cyan('\nDiscovery Details:'));
           console.log(`  Method: ${result.discoveryMethod}`);
@@ -192,7 +192,7 @@ program
           console.log(`  Can Train: ${result.manifest.defaultUsagePolicy.canTrain ? '✅' : '❌'}`);
           console.log(`  Can Quote: ${result.manifest.defaultUsagePolicy.canQuote ? '✅' : '❌'}`);
           console.log(`  Must Attribute: ${result.manifest.defaultUsagePolicy.mustAttribute ? '✅' : '❌'}`);
-          
+
           if (result.manifest.monetization) {
             console.log(chalk.green('\n💰 Monetization Available:'));
             if (result.manifest.monetization.tipJar) {
@@ -224,18 +224,18 @@ program
   .action(async (options) => {
     try {
       const spinner = ora('Initializing ContentMark...').start();
-      
+
       // Create .well-known directory if it doesn't exist
       const { ensureDirSync } = await import('fs-extra');
       ensureDirSync('.well-known');
-      
+
       const generator = new ContentMarkGenerator();
       const manifest = generator.generateTemplate(options.type);
-      
+
       writeFileSync('.well-known/contentmark.json', JSON.stringify(manifest, null, 2));
-      
+
       spinner.succeed('ContentMark initialized!');
-      
+
       console.log(chalk.green('\n✅ ContentMark has been initialized in your project'));
       console.log(chalk.cyan('\nNext steps:'));
       console.log('  1. Edit .well-known/contentmark.json with your information');
@@ -266,20 +266,20 @@ program
 
       const content = readFileSync(file, 'utf-8');
       const urls = content.split('\n').filter(line => line.trim()).map(line => line.trim());
-      
+
       if (urls.length === 0) {
         console.error(chalk.red('No URLs found in file'));
         process.exit(1);
       }
 
       console.log(chalk.blue(`🔍 Checking ${urls.length} websites for ContentMark support...\n`));
-      
+
       const batchConfig = config.getBatchConfig();
       const concurrency = parseInt(options.concurrency) || batchConfig.concurrency || 5;
       const checker = new URLChecker(undefined, { timeout: batchConfig.timeout });
-      
+
       const spinner = ora(`Checking websites... (0/${urls.length})`).start();
-      
+
       const results = await checker.batchCheck(urls, {
         concurrency,
         onProgress: (done, total) => {
@@ -303,7 +303,7 @@ program
 
       const found = resultArray.filter(([, result]) => result.found).length;
       const notFound = resultArray.length - found;
-      
+
       console.log(chalk.cyan('\n📊 Summary:'));
       console.log(`  ${chalk.green('✅ Found:')} ${found}`);
       console.log(`  ${chalk.red('❌ Not Found:')} ${notFound}`);
@@ -324,13 +324,13 @@ program
     console.log('ContentMark is an open protocol for ethical AI-content interaction.');
     console.log('It gives creators control over how AI uses their content while enabling');
     console.log('monetization and discoverability optimization.\n');
-    
+
     console.log(chalk.cyan('🌐 Resources:'));
     console.log('  Website: https://contentmark.org');
     console.log('  Documentation: https://contentmark.org/docs');
     console.log('  GitHub: https://github.com/contentmark/spec');
     console.log('  Examples: https://github.com/contentmark/spec/tree/main/examples\n');
-    
+
     console.log(chalk.cyan('🛠 CLI Commands:'));
     console.log('  contentmark validate [file]     Validate manifest file');
     console.log('  contentmark generate            Generate manifest template');
@@ -338,7 +338,7 @@ program
     console.log('  contentmark batch-check <file>  Check multiple websites from file');
     console.log('  contentmark init                Initialize in current directory');
     console.log('  contentmark info                Show this information\n');
-    
+
     console.log(chalk.gray('For detailed help: contentmark <command> --help'));
   });
 

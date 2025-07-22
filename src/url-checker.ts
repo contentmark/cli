@@ -32,7 +32,7 @@ export class URLChecker {
     try {
       const baseURL = new URL(url);
       const allErrors: string[] = [];
-      
+
       // Method 1: Check .well-known location
       const wellKnownResult = await this.checkWellKnown(baseURL);
       if (wellKnownResult.found) {
@@ -72,7 +72,7 @@ export class URLChecker {
 
   private async checkWellKnown(baseURL: URL): Promise<CheckResult> {
     const manifestUrl = new URL('/.well-known/contentmark.json', baseURL).toString();
-    
+
     try {
       const response = await this.fetch(manifestUrl, {
         method: 'GET',
@@ -86,7 +86,7 @@ export class URLChecker {
       if (response.ok) {
         const content = await response.text();
         const validation = await this.validator.validate(content);
-        
+
         return {
           found: true,
           method: 'well-known',
@@ -138,11 +138,11 @@ export class URLChecker {
       }
 
       const html = await response.text();
-      
+
       // Look for <link rel="contentmark" ...> elements
       const linkRegex = /<link[^>]*rel=["']contentmark["'][^>]*>/gi;
       const hrefRegex = /href=["']([^"']+)["']/i;
-      
+
       const linkMatches = html.match(linkRegex);
       if (!linkMatches) {
         return { found: false };
@@ -152,7 +152,7 @@ export class URLChecker {
         const hrefMatch = linkMatch.match(hrefRegex);
         if (hrefMatch) {
           let manifestUrl = hrefMatch[1];
-          
+
           // Make relative URLs absolute
           if (!manifestUrl.startsWith('http')) {
             manifestUrl = new URL(manifestUrl, baseURL).toString();
@@ -172,7 +172,7 @@ export class URLChecker {
             if (manifestResponse.ok) {
               const content = await manifestResponse.text();
               const validation = await this.validator.validate(content);
-              
+
               return {
                 found: true,
                 method: 'html-link',
@@ -222,10 +222,10 @@ export class URLChecker {
       // Parse Link headers (simplified)
       const linkRegex = /<([^>]+)>;\s*rel=["']?contentmark["']?/i;
       const match = linkHeaders.match(linkRegex);
-      
+
       if (match) {
         let manifestUrl = match[1];
-        
+
         // Make relative URLs absolute
         if (!manifestUrl.startsWith('http')) {
           manifestUrl = new URL(manifestUrl, baseURL).toString();
@@ -245,7 +245,7 @@ export class URLChecker {
           if (manifestResponse.ok) {
             const content = await manifestResponse.text();
             const validation = await this.validator.validate(content);
-            
+
             return {
               found: true,
               method: 'http-header',
@@ -277,7 +277,7 @@ export class URLChecker {
     optimization: any;
   }> {
     const result = await this.checkWebsite(url);
-    
+
     if (!result.found || !result.manifest) {
       throw new Error('No ContentMark manifest found');
     }
@@ -316,15 +316,15 @@ export class URLChecker {
     };
   }
 
-  async batchCheck(urls: string[], options: { 
-    concurrency?: number, 
-    onProgress?: (completed: number, total: number) => void 
+  async batchCheck(urls: string[], options: {
+    concurrency?: number,
+    onProgress?: (completed: number, total: number) => void
   } = {}): Promise<Map<string, CheckResult>> {
     const results = new Map<string, CheckResult>();
     const concurrency = options.concurrency || 5;
     const chunks = this.chunkArray(urls, concurrency);
     let completed = 0;
-    
+
     for (const chunk of chunks) {
       const promises = chunk.map(async (url) => {
         try {
@@ -339,9 +339,9 @@ export class URLChecker {
           if (options.onProgress) {
             options.onProgress(completed, urls.length);
           }
-          return [url, { 
-            found: false, 
-            errors: [(error as any).message] 
+          return [url, {
+            found: false,
+            errors: [(error as any).message]
           }] as [string, CheckResult];
         }
       });
@@ -370,7 +370,7 @@ export class URLChecker {
 
   async checkMultipleWebsites(urls: string[]): Promise<[string, CheckResult][]> {
     const results: [string, CheckResult][] = [];
-    
+
     for (const url of urls) {
       try {
         const result = await this.checkWebsite(url);
@@ -382,7 +382,7 @@ export class URLChecker {
         }]);
       }
     }
-    
+
     return results;
   }
 }

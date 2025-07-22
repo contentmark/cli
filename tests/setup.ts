@@ -53,56 +53,56 @@ export function createMockManifest(overrides: Partial<ContentMarkManifest> = {})
  */
 export function createInvalidManifest(type: 'missingFields' | 'invalidTypes' | 'invalidUrls' | 'invalidVersion'): any {
   switch (type) {
-    case 'missingFields':
-      return {
-        version: '1.0.0'
-        // Missing required fields
-      };
+  case 'missingFields':
+    return {
+      version: '1.0.0'
+      // Missing required fields
+    };
 
-    case 'invalidTypes':
-      return {
-        version: '1.0.0',
-        siteName: 'Test Site',
-        defaultUsagePolicy: {
-          canSummarize: 'yes', // Should be boolean
-          canTrain: false,
-          canQuote: true,
-          mustAttribute: true
-        },
-        lastModified: '2025-07-22T15:30:00Z'
-      };
+  case 'invalidTypes':
+    return {
+      version: '1.0.0',
+      siteName: 'Test Site',
+      defaultUsagePolicy: {
+        canSummarize: 'yes', // Should be boolean
+        canTrain: false,
+        canQuote: true,
+        mustAttribute: true
+      },
+      lastModified: '2025-07-22T15:30:00Z'
+    };
 
-    case 'invalidUrls':
-      return {
-        version: '1.0.0',
-        siteName: 'Test Site',
-        defaultUsagePolicy: {
-          canSummarize: true,
-          canTrain: false,
-          canQuote: true,
-          mustAttribute: true
-        },
-        monetization: {
-          tipJar: 'not-a-valid-url'
-        },
-        lastModified: '2025-07-22T15:30:00Z'
-      };
+  case 'invalidUrls':
+    return {
+      version: '1.0.0',
+      siteName: 'Test Site',
+      defaultUsagePolicy: {
+        canSummarize: true,
+        canTrain: false,
+        canQuote: true,
+        mustAttribute: true
+      },
+      monetization: {
+        tipJar: 'not-a-valid-url'
+      },
+      lastModified: '2025-07-22T15:30:00Z'
+    };
 
-    case 'invalidVersion':
-      return {
-        version: 'v1.0.0', // Invalid format
-        siteName: 'Test Site',
-        defaultUsagePolicy: {
-          canSummarize: true,
-          canTrain: false,
-          canQuote: true,
-          mustAttribute: true
-        },
-        lastModified: '2025-07-22T15:30:00Z'
-      };
+  case 'invalidVersion':
+    return {
+      version: 'v1.0.0', // Invalid format
+      siteName: 'Test Site',
+      defaultUsagePolicy: {
+        canSummarize: true,
+        canTrain: false,
+        canQuote: true,
+        mustAttribute: true
+      },
+      lastModified: '2025-07-22T15:30:00Z'
+    };
 
-    default:
-      throw new Error(`Unknown invalid manifest type: ${type}`);
+  default:
+    throw new Error(`Unknown invalid manifest type: ${type}`);
   }
 }
 
@@ -279,7 +279,7 @@ export function createMockFetch(mockServer: MockHTTPServer) {
   return jest.fn((url: string) => {
     const urlObj = new URL(url);
     const response = mockServer.getResponse(urlObj.pathname);
-    
+
     return Promise.resolve({
       ok: response.status >= 200 && response.status < 300,
       status: response.status,
@@ -313,7 +313,7 @@ export function captureConsoleOutput(): {
   errors: string[];
   warnings: string[];
   restore: () => void;
-} {
+  } {
   const logs: string[] = [];
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -402,10 +402,10 @@ declare global {
 expect.extend({
   toBeValidContentMark(received) {
     const pass = received && received.valid === true && received.errors.length === 0;
-    
+
     if (pass) {
       return {
-        message: () => `Expected validation result to be invalid, but it was valid`,
+        message: () => 'Expected validation result to be invalid, but it was valid',
         pass: true
       };
     } else {
@@ -420,7 +420,7 @@ expect.extend({
   toHaveValidationError(received, expectedError) {
     const errors = received?.errors || [];
     const pass = errors.some((error: string) => error.includes(expectedError));
-    
+
     if (pass) {
       return {
         message: () => `Expected validation result not to have error "${expectedError}", but it did`,
@@ -437,7 +437,7 @@ expect.extend({
   toHaveValidationWarning(received, expectedWarning) {
     const warnings = received?.warnings || [];
     const pass = warnings.some((warning: string) => warning.includes(expectedWarning));
-    
+
     if (pass) {
       return {
         message: () => `Expected validation result not to have warning "${expectedWarning}", but it did`,
@@ -454,7 +454,7 @@ expect.extend({
   toHaveSuggestion(received, expectedSuggestion) {
     const suggestions = received?.suggestions || [];
     const pass = suggestions.some((suggestion: string) => suggestion.includes(expectedSuggestion));
-    
+
     if (pass) {
       return {
         message: () => `Expected validation result not to have suggestion "${expectedSuggestion}", but it did`,
@@ -479,10 +479,10 @@ export async function measurePerformance<T>(
   const startTime = process.hrtime.bigint();
   const result = await operation();
   const endTime = process.hrtime.bigint();
-  
+
   const timeMs = Number(endTime - startTime) / 1_000_000; // Convert to milliseconds
   const withinLimit = timeMs <= maxTimeMs;
-  
+
   return { result, timeMs, withinLimit };
 }
 
@@ -493,9 +493,9 @@ export function measureMemoryUsage<T>(operation: () => T): { result: T; memoryUs
   const initialMemory = process.memoryUsage().heapUsed;
   const result = operation();
   const finalMemory = process.memoryUsage().heapUsed;
-  
+
   const memoryUsedMB = (finalMemory - initialMemory) / 1024 / 1024;
-  
+
   return { result, memoryUsedMB };
 }
 
@@ -504,7 +504,7 @@ export function measureMemoryUsage<T>(operation: () => T): { result: T; memoryUs
  */
 export class NetworkSimulator {
   static createSlowResponse(delayMs: number = 2000) {
-    return jest.fn(() => 
+    return jest.fn(() =>
       new Promise(resolve => {
         setTimeout(() => {
           resolve({
@@ -523,7 +523,7 @@ export class NetworkSimulator {
   }
 
   static createTimeoutResponse() {
-    return jest.fn(() => 
+    return jest.fn(() =>
       new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 10000);
       })
@@ -537,7 +537,7 @@ export class NetworkSimulator {
 export class TestEnvironment {
   static setupOfflineMode() {
     // Mock fetch to simulate offline environment
-    (global as any).fetch = jest.fn(() => 
+    (global as any).fetch = jest.fn(() =>
       Promise.reject(new Error('Network unavailable'))
     );
   }
@@ -561,7 +561,7 @@ export class TestEnvironment {
 export class FileSystemTestHelper {
   static createMockFileSystem(files: Record<string, string>) {
     const fs = require('fs');
-    
+
     const originalReadFileSync = fs.readFileSync;
     const originalExistsSync = fs.existsSync;
     const originalWriteFileSync = fs.writeFileSync;
