@@ -13,21 +13,55 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
-    // Basic rules that work without TypeScript
-    'no-console': 'off',
+    // Basic JavaScript rules
+    'no-console': 'off', // CLI tool needs console output
     'no-debugger': 'error',
     'no-var': 'error',
     'prefer-const': 'error',
+    'prefer-arrow-callback': 'error',
+    'arrow-spacing': 'error',
+    'no-duplicate-imports': 'error',
+    'no-useless-return': 'error',
+    'prefer-template': 'error',
     'quotes': ['error', 'single'],
     'semi': ['error', 'always'],
+    'comma-dangle': ['error', 'never'],
     'indent': ['error', 2],
     'no-trailing-spaces': 'error',
-    'eol-last': 'error',
-    'no-unused-vars': ['error', { 
-      argsIgnorePattern: '^_',
-      varsIgnorePattern: '^_'
-    }]
+    'eol-last': 'error'
   },
+  overrides: [
+    {
+      // TypeScript files - use basic parsing without TypeScript-specific rules
+      files: ['**/*.ts'],
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        ecmaFeatures: {
+          // Allow TypeScript syntax
+        }
+      },
+      rules: {
+        // Disable rules that don't work well with TypeScript syntax
+        'no-undef': 'off', // TypeScript handles this
+        'no-unused-vars': ['error', { 
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_'
+        }]
+      }
+    },
+    {
+      // Test files
+      files: ['**/*.test.ts', '**/*.spec.ts', '**/tests/**/*.ts'],
+      env: {
+        jest: true
+      },
+      rules: {
+        'no-console': 'off',
+        'max-len': 'off'
+      }
+    }
+  ],
   ignorePatterns: [
     'dist/',
     'build/',
