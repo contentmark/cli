@@ -1,0 +1,17 @@
+{
+  "validation": {
+    "schemaUrl": "https://schema.contentmark.org/v1/manifest.json",
+    "strictMode": false,
+    "customRules": []
+  },
+  "output": {
+    "format": "json",
+    "verbose": false,
+    "colors": true
+  },
+  "batch": {
+    "concurrency": 5,
+    "timeout": 10000,
+    "retries": 2
+  }
+}
