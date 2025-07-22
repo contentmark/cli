@@ -34,7 +34,7 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(invalidJson);
       
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('Invalid JSON'));
+      expect(result.errors.some(error => error.includes('Invalid JSON'))).toBe(true);
     });
 
     it('should require all mandatory fields', async () => {
@@ -46,9 +46,9 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(JSON.stringify(incomplete));
       
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('siteName'));
-      expect(result.errors).toContain(expect.stringContaining('defaultUsagePolicy'));
-      expect(result.errors).toContain(expect.stringContaining('lastModified'));
+      expect(result.errors.some(error => error.includes('siteName'))).toBe(true);
+      expect(result.errors.some(error => error.includes('defaultUsagePolicy'))).toBe(true);
+      expect(result.errors.some(error => error.includes('lastModified'))).toBe(true);
     });
 
     it('should validate usage policy fields', async () => {
@@ -67,8 +67,8 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(JSON.stringify(manifest));
       
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('canSummarize must be a boolean'));
-      expect(result.errors).toContain(expect.stringContaining('mustAttribute'));
+      expect(result.errors.some(error => error.includes('canSummarize') && error.includes('boolean'))).toBe(true);
+      expect(result.errors.some(error => error.includes('mustAttribute'))).toBe(true);
     });
 
     it('should validate version format', async () => {
@@ -87,7 +87,7 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(JSON.stringify(manifest));
       
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('semantic versioning'));
+      expect(result.errors.some(error => error.includes('semantic versioning'))).toBe(true);
     });
 
     it('should validate URL formats', async () => {
@@ -109,7 +109,7 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(JSON.stringify(manifest));
       
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('valid absolute URL'));
+      expect(result.errors.some(error => error.includes('valid absolute URL'))).toBe(true);
     });
 
     it('should detect logical inconsistencies', async () => {
@@ -131,7 +131,7 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(JSON.stringify(manifest));
       
       expect(result.valid).toBe(true); // Structure is valid
-      expect(result.warnings).toContain(expect.stringContaining('Conflicting settings'));
+      expect(result.warnings.some(warning => warning.includes('Conflicting settings'))).toBe(true);
     });
 
     it('should provide optimization suggestions', async () => {
@@ -150,8 +150,8 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(JSON.stringify(basicManifest));
       
       expect(result.valid).toBe(true);
-      expect(result.suggestions).toContain(expect.stringContaining('monetization'));
-      expect(result.suggestions).toContain(expect.stringContaining('visibility'));
+      expect(result.suggestions.some(suggestion => suggestion.includes('monetization'))).toBe(true);
+      expect(result.suggestions.some(suggestion => suggestion.includes('visibility'))).toBe(true);
     });
 
     it('should validate access type requirements', async () => {
@@ -174,7 +174,7 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validate(JSON.stringify(manifest));
       
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('loginUrl is required'));
+      expect(result.errors.some(error => error.includes('loginUrl is required'))).toBe(true);
     });
   });
 
@@ -183,7 +183,7 @@ describe('ContentMarkValidator', () => {
       const result = await validator.validateURL('https://nonexistent-domain-12345.com');
       
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('Network error'));
+      expect(result.errors.some(error => error.includes('Network error'))).toBe(true);
     });
 
     it('should handle HTTP errors', async () => {

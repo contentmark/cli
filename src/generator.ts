@@ -214,7 +214,7 @@ export class ContentMarkGenerator {
           }
         }
       ]);
-      access = { ...access, loginUrl: loginInfo.loginUrl, previewAvailable: true };
+      access = { ...access, loginUrl: loginInfo.loginUrl, previewAvailable: true } as any;
     } else if (accessType.type === 'paywall') {
       const paidInfo = await inquirer.prompt([
         {
@@ -231,9 +231,9 @@ export class ContentMarkGenerator {
           }
         }
       ]);
-      access = { ...access, subscriptionUrl: paidInfo.subscriptionUrl, previewAvailable: true };
+      access = { ...access, subscriptionUrl: paidInfo.subscriptionUrl, previewAvailable: true } as any;
     } else {
-      access = { ...access, previewAvailable: true };
+      access = { ...access, previewAvailable: true } as any;
     }
 
     // Build the manifest
@@ -445,13 +445,13 @@ export class ContentMarkGenerator {
         type: 'input',
         name: 'expertiseAreas',
         message: 'Your expertise areas (comma-separated):',
-        filter: (input) => input ? input.split(',').map(s => s.trim()).filter(s => s) : []
+        filter: (input: string) => input ? input.split(',').map((s: string) => s.trim()).filter((s: string) => s) : []
       },
       {
         type: 'input',
         name: 'preferredQueries',
         message: 'Preferred search queries (comma-separated):',
-        filter: (input) => input ? input.split(',').map(s => s.trim()).filter(s => s) : []
+        filter: (input: string) => input ? input.split(',').map((s: string) => s.trim()).filter((s: string) => s) : []
       },
       {
         type: 'number',
@@ -608,7 +608,7 @@ export class ContentMarkGenerator {
           url: 'https://yoursite.com/subscribe',
           price: '$99/month'
         }
-      },
+      } as any,
       access: {
         type: 'paywall',
         previewAvailable: true,

@@ -519,6 +519,32 @@ export class NetworkSimulator {
   }
 }
 
+jest.mock('node-fetch', () => {
+  return jest.fn((url: string) => {
+    if (url.includes('nonexistent-domain-12345.com')) {
+      return Promise.reject(new Error('Network error: getaddrinfo ENOTFOUND'));
+    }
+    
+    if (url.includes('httpstat.us')) {
+      return Promise.resolve({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        text: () => Promise.resolve('Not Found'),
+        json: () => Promise.reject(new Error('Invalid JSON'))
+      });
+    }
+    
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: () => Promise.resolve('{"version":"1.0.0","siteName":"Mock","defaultUsagePolicy":{"canSummarize":true,"canTrain":false,"canQuote":true,"mustAttribute":true},"lastModified":"2025-07-22T16:00:00Z"}'),
+      json: () => Promise.resolve({"version":"1.0.0","siteName":"Mock","defaultUsagePolicy":{"canSummarize":true,"canTrain":false,"canQuote":true,"mustAttribute":true},"lastModified":"2025-07-22T16:00:00Z"})
+    });
+  });
+});
+
 /**
  * Test environment setup for different scenarios
  */
