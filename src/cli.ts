@@ -40,7 +40,7 @@ program
         }
         
         const content = readFileSync(file, 'utf-8');
-        result = validator.validate(content);
+        result = await validator.validate(content);
         spinner.succeed(`Validated ${file}`);
       }
 
@@ -59,21 +59,21 @@ program
 
       if (result.errors.length > 0) {
         console.log(chalk.red('\nErrors:'));
-        result.errors.forEach(error => {
+        result.errors.forEach((error: string) => {
           console.log(chalk.red(`  • ${error}`));
         });
       }
 
       if (result.warnings.length > 0) {
         console.log(chalk.yellow('\nWarnings:'));
-        result.warnings.forEach(warning => {
+        result.warnings.forEach((warning: string) => {
           console.log(chalk.yellow(`  ⚠ ${warning}`));
         });
       }
 
       if (result.suggestions.length > 0 && options.verbose) {
         console.log(chalk.cyan('\nSuggestions:'));
-        result.suggestions.forEach(suggestion => {
+        result.suggestions.forEach((suggestion: string) => {
           console.log(chalk.cyan(`  💡 ${suggestion}`));
         });
       }
@@ -86,7 +86,7 @@ program
 
     } catch (error) {
       spinner.fail('Validation failed');
-      console.error(chalk.red(`Error: ${error.message}`));
+      console.error(chalk.red(`Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);
     }
   });
@@ -124,7 +124,7 @@ program
       console.log(chalk.gray(`\nValidate with: contentmark validate ${options.output}`));
 
     } catch (error) {
-      console.error(chalk.red(`Error: ${error.message}`));
+      console.error(chalk.red(`Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);
     }
   });
@@ -160,7 +160,7 @@ program
         } else {
           console.log(chalk.yellow('⚠ Manifest has validation issues'));
           if (result.errors) {
-            result.errors.forEach(error => {
+            result.errors.forEach((error: string) => {
               console.log(chalk.red(`  • ${error}`));
             });
           }
@@ -192,7 +192,7 @@ program
 
     } catch (error) {
       spinner.fail('Check failed');
-      console.error(chalk.red(`Error: ${error.message}`));
+      console.error(chalk.red(`Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);
     }
   });
@@ -225,7 +225,7 @@ program
       console.log('\nFor help: https://contentmark.org/docs/getting-started');
 
     } catch (error) {
-      console.error(chalk.red(`Error: ${error.message}`));
+      console.error(chalk.red(`Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);
     }
   });
